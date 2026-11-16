@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi día cuqui</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Idea: columna de móvil con mascota que reacciona al progreso, tira semanal con anillos y tarjetas pastel, una por hábito */
+:root{
+  --bg:#FFF5F8; --surface:#FFFFFF; --ink:#4B3A52; --ink-soft:#826F8A; --line:#F6E1EA; --on:#FFFFFF; --mascot:#FFB3C7;
+  --pink:#FFE0E9; --pink-d:#D9487A;
+  --lilac:#EBE1FB; --lilac-d:#7C5CC4;
+  --mint:#D7F3E6; --mint-d:#2E8F6B;
+  --peach:#FFE3D0; --peach-d:#D96B2B;
+  --butter:#FFF3BF; --butter-d:#A97C06;
+  --sky:#D9ECFB; --sky-d:#2F7FB8;
+  --display:'Fredoka','Nunito',system-ui,sans-serif; --body:'Nunito',system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#241B2B; --surface:#33263C; --ink:#F7EAF3; --ink-soft:#BCA8C6; --line:#493550; --on:#2A1D32; --mascot:#FF9DB8;
+    --pink:#4D2D41; --pink-d:#FF8FB4; --lilac:#3F3260; --lilac-d:#B9A0F5; --mint:#254A41; --mint-d:#6FD4A9;
+    --peach:#52352B; --peach-d:#FFA773; --butter:#4B4222; --butter-d:#F2CB5B; --sky:#263E57; --sky-d:#7CC1F0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#241B2B; --surface:#33263C; --ink:#F7EAF3; --ink-soft:#BCA8C6; --line:#493550; --on:#2A1D32; --mascot:#FF9DB8;
+  --pink:#4D2D41; --pink-d:#FF8FB4; --lilac:#3F3260; --lilac-d:#B9A0F5; --mint:#254A41; --mint-d:#6FD4A9;
+  --peach:#52352B; --peach-d:#FFA773; --butter:#4B4222; --butter-d:#F2CB5B; --sky:#263E57; --sky-d:#7CC1F0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:480px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(104px + env(safe-area-inset-bottom))}
+:focus-visible{outline:3px solid var(--lilac-d);outline-offset:2px}
+.ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:18px;height:18px}
+
+/* cabecera */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eyebrow{font-size:13px;font-weight:800;color:var(--ink-soft);letter-spacing:.02em}
+h1{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.1;text-wrap:balance}
+.msg{margin-top:6px;font-weight:600;color:var(--ink-soft);text-wrap:balance}
+.mascot{position:relative;width:104px;height:104px;flex:none}
+.mascot svg{width:100%;height:100%;display:block}
+.mascot.m4 svg{animation:bob 1.8s ease-in-out infinite}
+.badge{position:absolute;right:-2px;bottom:2px;background:var(--pink-d);color:var(--on);font-family:var(--display);font-weight:600;font-size:14px;border-radius:99px;padding:2px 10px;border:3px solid var(--bg)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+
+/* tira semanal */
+.week{display:flex;align-items:center;gap:4px;margin:18px -4px 18px}
+.arrow{width:30px;height:40px;border:0;background:transparent;color:var(--ink-soft);display:grid;place-items:center;border-radius:12px;flex:none}
+.arrow:disabled{opacity:.3;cursor:default}
+.days{flex:1;display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.wd{border:0;background:transparent;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:16px;font-weight:800;font-size:12px;color:var(--ink-soft)}
+.wd:disabled{opacity:.4;cursor:default}
+.ring{width:38px;height:38px;border-radius:50%;background:conic-gradient(var(--pink-d) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center}
+.ring span{width:30px;height:30px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--ink)}
+.wd[aria-current="date"]{color:var(--ink)}
+.wd[aria-current="date"] .ring span{background:var(--pink-d);color:var(--on)}
+.wd.today .ring span{box-shadow:0 0 0 2px var(--surface) inset}
+.note{background:var(--butter);color:var(--ink);border-radius:16px;padding:10px 14px;font-size:14px;font-weight:600;margin-bottom:14px}
+
+/* tarjetas */
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{--a:var(--pink);--ad:var(--pink-d);background:var(--surface);border:2px solid var(--a);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 22px -16px var(--ad)}
+.c-sport{--a:var(--pink);--ad:var(--pink-d)}
+.c-sleep{--a:var(--lilac);--ad:var(--lilac-d)}
+.c-steps{--a:var(--mint);--ad:var(--mint-d)}
+.c-fv{--a:var(--peach);--ad:var(--peach-d)}
+.c-protein{--a:var(--butter);--ad:var(--butter-d)}
+.c-skin{--a:var(--sky);--ad:var(--sky-d)}
+.ch{display:flex;align-items:center;gap:12px}
+.ib{width:46px;height:46px;border-radius:16px;background:var(--a);color:var(--ad);display:grid;place-items:center;flex:none}
+.ch .t{flex:1;min-width:0}
+h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.15}
+.sub{font-size:14px;font-weight:600;color:var(--ink-soft)}
+.tog{width:46px;height:46px;border-radius:50%;border:2px solid var(--a);background:var(--surface);color:transparent;display:grid;place-items:center;flex:none;transition:background .15s,transform .15s}
+.tog[aria-pressed="true"],.tog.on{background:var(--ad);border-color:var(--ad);color:var(--on);animation:pop .3s}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--a);background:var(--surface);border-radius:99px;padding:6px 14px;min-height:40px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ad);border-color:var(--ad);color:var(--on)}
+.bar{height:10px;border-radius:99px;background:var(--a);overflow:hidden}
+.bar i{display:block;height:100%;width:calc(var(--w)*1%);background:var(--ad);border-radius:99px;transition:width .3s}
+.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big input{width:7.5ch;border:0;border-bottom:3px solid var(--a);background:transparent;font-family:var(--display);font-weight:600;font-size:34px;line-height:1.1;padding:0 0 2px;border-radius:0;outline-offset:4px}
+.big .of{font-weight:700;color:var(--ink-soft)}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper .val{font-family:var(--display);font-weight:600;font-size:34px;min-width:5.2ch;text-align:center}
+.round{width:44px;height:44px;border-radius:50%;border:2px solid var(--a);background:var(--surface);color:var(--ad);display:grid;place-items:center}
+
+/* skincare */
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--a);border-radius:18px;padding:10px 12px;min-height:56px;font-weight:700}
+.step .ib{width:36px;height:36px;border-radius:12px}
+.step .nm{flex:1}
+.step .chk{width:28px;height:28px;border-radius:50%;border:2px solid var(--a);display:grid;place-items:center;color:transparent;flex:none}
+.step[aria-pressed="true"]{background:var(--a)}
+.step[aria-pressed="true"] .chk{background:var(--ad);border-color:var(--ad);color:var(--on)}
+.step[aria-pressed="true"] .nm{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:var(--ad)}
+.tag{display:inline-flex;align-items:center;gap:6px;background:var(--lilac);color:var(--ink);font-weight:800;font-size:13px;border-radius:99px;padding:4px 12px}
+.plan{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.pd{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border-radius:16px;background:var(--bg);font-size:12px;font-weight:800;color:var(--ink-soft)}
+.pd.now{background:var(--lilac);color:var(--ink)}
+.pd .ic{color:var(--sky-d)}
+.pd.act .ic{color:var(--lilac-d)}
+
+/* semana */
+.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dot{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.dot i{width:30px;height:30px;border-radius:50%;border:2px solid var(--a);display:grid;place-items:center;color:var(--on)}
+.dot.full i{background:var(--ad);border-color:var(--ad)}
+.dot.part i{background:var(--a)}
+.dot.fut{opacity:.35}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{border-radius:20px;padding:12px 10px;display:flex;flex-direction:column;gap:2px;background:var(--a)}
+.tile b{font-family:var(--display);font-weight:600;font-size:21px}
+.tile span{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.streak{display:flex;align-items:center;gap:10px;font-weight:700}
+.streak .ib{width:36px;height:36px;border-radius:12px}
+.streak .n{margin-left:auto;font-family:var(--display);font-weight:600}
+
+/* ajustes */
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
+.field input[type=number],.field input[type=text]{width:110px;border:2px solid var(--a);border-radius:14px;background:var(--surface);padding:8px 12px;font-weight:700;text-align:right}
+.row{display:flex;align-items:center;gap:10px}
+.row .nm{flex:1;font-weight:700}
+.mini{border:2px solid var(--a);background:var(--surface);color:var(--ink);border-radius:14px;padding:6px 12px;font-weight:700;font-size:14px;min-height:36px}
+.mini.warn{background:var(--pink-d);border-color:var(--pink-d);color:var(--on)}
+.addp{display:flex;flex-direction:column;gap:10px}
+.addp input[type=text]{width:100%;border:2px solid var(--a);border-radius:14px;background:var(--surface);padding:10px 12px;font-weight:700}
+.lbl{font-size:13px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+.btn{border:0;background:var(--pink-d);color:var(--on);font-family:var(--display);font-weight:600;font-size:17px;border-radius:99px;padding:12px 18px;min-height:48px}
+
+/* navegación */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom));z-index:5}
+.nav div{max-width:480px;margin:0 auto;display:flex;gap:6px}
+.nav button{flex:1;border:0;background:transparent;border-radius:18px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+.nav button[aria-current="page"]{background:var(--pink);color:var(--ink)}
+.nav button[aria-current="page"] .ic{color:var(--pink-d)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></symbol>
+<symbol id="i-steps" viewBox="0 0 24 24"><ellipse cx="8" cy="9" rx="3" ry="4.5"/><rect x="6" y="15" width="4" height="4" rx="2"/><ellipse cx="16.5" cy="6.5" rx="3" ry="4.5" /><rect x="14.5" y="12.5" width="4" height="4" rx="2"/></symbol>
+<symbol id="i-apple" viewBox="0 0 24 24"><path d="M12 8c-1.5-1.3-4-1.5-5.5 0C4.8 9.7 5 13 6.5 16c1.500 3 3 4 5.500 3 2.500 1 4-.5 5.500-3 1.500-3 1.700-6.300 0-8-1.500-1.500-4-1.300-5.500 0z"/><path d="M12 8c0-2 1-3.500 2.500-4.500"/></symbol>
+<symbol id="i-egg" viewBox="0 0 24 24"><path d="M12 3c3.500 0 6.500 5.500 6.500 10a6.500 6.500 0 0 1-13 0C5.500 8.500 8.500 3 12 3z"/><circle cx="12" cy="14" r="2.500"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3c3.500 4 6 7 6 10.500a6 6 0 0 1-12 0C6 10 8.500 7 12 3z"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/><path d="M19 16v4M17 18h4"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9.500A2 2 0 0 0 6.700 21h10.600a2 2 0 0 0 1.700-2.500L14 9V3"/><path d="M8 15h8"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.500-8.500-9A4.500 4.500 0 0 1 12 7.500 4.500 4.500 0 0 1 20.500 11C19 15.500 12 20 12 20z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20v-9M12 20V5M19 20v-7"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <div id="top"></div>
+  <main id="main" class="stack"></main>
+</div>
+<nav class="nav" aria-label="Secciones"><div id="nav"></div></nav>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var pad=function(n){return String(n).padStart(2,'0')};
+var keyOf=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var parse=function(k){var p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+var addDays=function(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x};
+var todayK=function(){return keyOf(new Date())};
+var dowOf=function(k){return (parse(k).getDay()+6)%7};
+var nf=function(n){return Number(n).toLocaleString('es-ES')};
+var cap=function(s){return s.charAt(0).toUpperCase()+s.slice(1)};
+var clone=function(o){return JSON.parse(JSON.stringify(o))};
+var LET=['L','M','X','J','V','S','D'];
+var DAYN=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+var ICONS=['drop','heart','sun','flask','sparkle'];
+
+function icon(n,c){return '<svg class="ic '+(c||'')+'" aria-hidden="true"><use href="#i-'+n+'"/></svg>'}
+
+/* ---------- datos por defecto ---------- */
+function defaultCfg(){
+  var am=['limp','hidr','spf'];
+  return {
+    v:1,
+    goals:{sleep:8,steps:10000,protein:100},
+    sports:['Cardio','Fuerza'],
+    products:[
+      {id:'limp',name:'Limpiador',icon:'drop',active:false},
+      {id:'hidr',name:'Hidratante',icon:'heart',active:false},
+      {id:'spf',name:'Protector solar',icon:'sun',active:false},
+      {id:'retinol',name:'Retinol',icon:'flask',active:true},
+      {id:'azelaico',name:'Ácido azelaico',icon:'sparkle',active:true}
+    ],
+    plan:{
+      '0':{am:am,pm:['limp','retinol','hidr']},
+      '1':{am:am,pm:['limp','azelaico','hidr']},
+      '2':{am:am,pm:['limp','hidr']},
+      '3':{am:am,pm:['limp','retinol','hidr']},
+      '4':{am:am,pm:['limp','azelaico','hidr']},
+      '5':{am:am,pm:['limp','hidr']},
+      '6':{am:am,pm:['limp','azelaico','hidr']}
+    }
+  };
+}
+function mergeCfg(d){
+  var base=defaultCfg(), c=clone(d||{});
+  base.goals=Object.assign(base.goals,c.goals||{});
+  if(Array.isArray(c.products)&&c.products.length)base.products=c.products;
+  if(Array.isArray(c.sports))base.sports=c.sports;
+  if(c.plan)base.plan=Object.assign(base.plan,c.plan);
+  return base;
+}
+function emptyDay(){return {sport:false,sportTypes:[],sleep:null,steps:null,protein:null,fv:{b:false,l:false,d:false},skin:{am:{},pm:{}}}}
+
+/* ---------- estado ---------- */
+var S={newSport:'',confirmSport:null,date:todayK(),tab:'hoy',days:{},cfg:defaultCfg(),mode:'loading',col:null,editDay:0,newIcon:'drop',newName:'',newActive:false,confirmDel:null,localHad:false,stale:false};
+var LS='mdc-v1';
+function loadLocal(){
+  try{var r=localStorage.getItem(LS);if(r){var o=JSON.parse(r);S.days=o.days||{};S.cfg=mergeCfg(o.cfg);S.localHad=true}}catch(e){}
+}
+function persistLocal(){try{localStorage.setItem(LS,JSON.stringify({days:S.days,cfg:S.cfg}))}catch(e){}}
+
+/* ---------- escritura en la nube, un documento cada vez ---------- */
+var wq={};
+function pushCloud(id,data){
+  if(!S.col)return;
+  var q=wq[id]||(wq[id]={timer:null,busy:false,dirty:false,data:null});
+  q.data=data;clearTimeout(q.timer);q.timer=setTimeout(function(){flush(id)},350);
+}
+function flush(id){
+  var q=wq[id];q.timer=null;
+  if(q.busy){q.dirty=true;return}
+  q.busy=true;
+  S.col.doc(id).set(q.data).then(function(){S.err=false}).catch(function(){S.err=true;renderStatus()}).then(function(){
+    q.busy=false;if(q.dirty){q.dirty=false;flush(id)}
+  });
+}
+function pending(id){var q=wq[id];return !!(q&&(q.timer||q.busy||q.dirty))}
+
+function dayTypes(d){return Array.isArray(d.sportTypes)?d.sportTypes:(d.sportType?[d.sportType]:[])}
+function getDay(k){return S.days[k]||emptyDay()}
+function upd(k,fn){var d=clone(getDay(k));if(!d.fv)d.fv={b:false,l:false,d:false};if(!d.skin)d.skin={am:{},pm:{}};fn(d);S.days[k]=d;persistLocal();pushCloud('d-'+k,d)}
+function saveCfg(){persistLocal();pushCloud('config',S.cfg)}
+
+/* ---------- cálculos ---------- */
+function frac(day){
+  var g=S.cfg.goals,fv=day.fv||{},n=(fv.b?1:0)+(fv.l?1:0)+(fv.d?1:0);
+  return {
+    sport:day.sport?1:0,
+    sleep:day.sleep>0?Math.min(day.sleep/g.sleep,1):0,
+    steps:day.steps>0?Math.min(day.steps/g.steps,1):0,
+    fv:n/3,
+    protein:day.protein>0?Math.min(day.protein/g.protein,1):0
+  };
+}
+function pct(day){var f=frac(day);return (f.sport+f.sleep+f.steps+f.fv+f.protein)/5}
+function prod(id){return S.cfg.products.filter(function(p){return p.id===id})[0]}
+function skinPlan(k){
+  var pl=S.cfg.plan[String(dowOf(k))]||{am:[],pm:[]};
+  var m=function(ids){return ids.map(prod).filter(Boolean)};
+  return {am:m(pl.am||[]),pm:m(pl.pm||[])};
+}
+function skinProg(k){
+  var sp=skinPlan(k),d=getDay(k).skin||{am:{},pm:{}},done=0;
+  sp.am.forEach(function(p){if(d.am&&d.am[p.id])done++});
+  sp.pm.forEach(function(p){if(d.pm&&d.pm[p.id])done++});
+  return {done:done,total:sp.am.length+sp.pm.length};
+}
+function skinFrac(k){var s=skinProg(k);return s.total?s.done/s.total:0}
+function habitFrac(k,h){return h==='skin'?skinFrac(k):frac(getDay(k))[h]}
+function streak(h){
+  var d=parse(todayK());
+  if(habitFrac(keyOf(d),h)<1)d=addDays(d,-1);
+  var n=0;
+  while(habitFrac(keyOf(d),h)>=1&&n<2000){n++;d=addDays(d,-1)}
+  return n;
+}
+
+/* ---------- mascota ---------- */
+function mascot(p){
+  var m=p>=1?4:p>=.7?3:p>=.35?2:1;
+  var eyes={
+    1:'<path d="M36 58q6 5 12 0M72 58q6 5 12 0" stroke="#4B3A52" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    2:'<circle cx="42" cy="57" r="4.5" fill="#4B3A52"/><circle cx="78" cy="57" r="4.5" fill="#4B3A52"/>',
+    3:'<circle cx="42" cy="57" r="6" fill="#4B3A52"/><circle cx="78" cy="57" r="6" fill="#4B3A52"/><circle cx="44" cy="55" r="2" fill="#fff"/><circle cx="80" cy="55" r="2" fill="#fff"/>',
+    4:'<path d="M42 49l2.500 6 6 2.500-6 2.500-2.500 6-2.500-6-6-2.500 6-2.500z" fill="#4B3A52"/><path d="M78 49l2.500 6 6 2.500-6 2.500-2.500 6-2.500-6-6-2.500 6-2.500z" fill="#4B3A52"/>'
+  }[m];
+  var mouth={
+    1:'<path d="M53 75h14" stroke="#4B3A52" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    2:'<path d="M51 72q9 8 18 0" stroke="#4B3A52" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    3:'<path d="M49 70q11 12 22 0" stroke="#4B3A52" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    4:'<path d="M49 69q11 16 22 0z" fill="#B8325F" stroke="#4B3A52" stroke-width="3" stroke-linejoin="round"/>'
+  }[m];
+  return '<div class="mascot m'+m+'" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M60 16C88 16 106 38 106 64c0 28-21 44-46 44S14 92 14 64C14 38 32 16 60 16z" style="fill:var(--mascot)"/><ellipse cx="30" cy="72" rx="8" ry="5.500" fill="#FF7FA3" opacity=".55"/><ellipse cx="90" cy="72" rx="8" ry="5.500" fill="#FF7FA3" opacity=".55"/>'+eyes+mouth+'<path d="M60 17l-15-9v18zM60 17l15-9v18z" style="fill:var(--lilac-d)"/><circle cx="60" cy="17" r="4.500" style="fill:var(--lilac-d)"/></svg><span class="badge" id="badge">'+Math.round(p*100)+'%</span></div>';
+}
+function msgFor(p,isToday){
+  if(!isToday)return p>=1?'Ese día lo bordaste.':'Puedes completar lo que falte de ese día.';
+  if(p>=1)return '¡Día redondo! Eres top.';
+  if(p>=.7)return 'Casi lo tienes, un empujoncito más.';
+  if(p>=.35)return 'Vas a muy buen ritmo.';
+  if(p>0)return 'Ya has empezado, ¡sigue así!';
+  return 'Empezamos suave: un hábito ya cuenta.';
+}
+
+/* ---------- partes de la pantalla ---------- */
+function renderTop(){
+  if(S.tab==='ajustes'){$('#top').innerHTML='<div class="top"><div><p class="eyebrow">Tu espacio</p><h1>Ajustes</h1></div></div>'+statusNote();return}
+  var k=S.date,d=parse(k),isToday=k===todayK(),p=pct(getDay(k));
+  var eyebrow=cap(new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(d));
+  var start=addDays(d,-dowOf(k)),h='';
+  for(var i=0;i<7;i++){
+    var x=addDays(start,i),kk=keyOf(x),fut=kk>todayK(),pc=Math.round(pct(getDay(kk))*100);
+    h+='<button class="wd'+(kk===todayK()?' today':'')+'" data-act="day" data-v="'+kk+'"'+(fut?' disabled':'')+(kk===k?' aria-current="date"':'')+' aria-label="'+esc(new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long'}).format(x))+'"><span>'+LET[i]+'</span><span class="ring" style="--p:'+pc+'"><span>'+x.getDate()+'</span></span></button>';
+  }
+  var nextDis=keyOf(addDays(start,7))>todayK();
+  var title=S.tab==='semana'?'Tu semana':S.tab==='skin'?'Skincare':(isToday?'Hola, Susana':'Repasamos el día');
+  $('#top').innerHTML='<div class="top"><div><p class="eyebrow">'+esc(eyebrow)+'</p><h1>'+title+'</h1><p class="msg">'+msgFor(p,isToday)+'</p></div>'+mascot(p)+'</div>'
+    +statusNote()
+    +'<div class="week"><button class="arrow" data-act="prevw" aria-label="Semana anterior">'+icon('left')+'</button><div class="days">'+h+'</div><button class="arrow" data-act="nextw" aria-label="Semana siguiente"'+(nextDis?' disabled':'')+'>'+icon('right')+'</button></div>';
+}
+function statusNote(){
+  if(S.mode==='local')return '<div class="note" id="note">Ahora mismo tus datos se guardan solo en este dispositivo.</div>';
+  if(S.err)return '<div class="note" id="note">No se ha podido guardar en tu cuenta. Lo reintento con el siguiente cambio.</div>';
+  if(S.stale)return '<div class="note" id="note">No consigo conectar con tu cuenta todavía. Lo que ves puede no estar al día.</div>';
+  return '';
+}
+function renderStatus(){var n=$('#note');var h=statusNote();if(n&&!h)n.remove();else if(n)n.outerHTML=h;else if(h)$('#top').insertAdjacentHTML('beforeend',h)}
+
+function bar(id,w){return '<div class="bar"><i id="'+id+'" style="--w:'+Math.round(w*100)+'"></i></div>'}
+
+function renderHoy(){
+  var k=S.date,day=getDay(k),g=S.cfg.goals,f=frac(day),fv=day.fv||{},nfv=(fv.b?1:0)+(fv.l?1:0)+(fv.d?1:0);
+  var h='';
+  // deporte
+  var types=dayTypes(day),all=S.cfg.sports.slice();
+  types.forEach(function(t){if(all.indexOf(t)<0)all.push(t)});
+  h+='<section class="card c-sport"><div class="ch"><span class="ib">'+icon('dumbbell')+'</span><div class="t"><h2>Deporte</h2><p class="sub">'+(day.sport?(types.length?esc(types.join(' y '))+', ¡hecho!':'¡Hecho!'):'¿Qué has hecho hoy?')+'</p></div><button class="tog" data-act="sport" aria-pressed="'+!!day.sport+'" aria-label="Deporte hecho">'+icon('check')+'</button></div>';
+  if(all.length){h+='<div class="chips" role="group" aria-label="Tipo de deporte">'+all.map(function(s){return '<button class="chip" data-act="sporttype" data-v="'+esc(s)+'" aria-pressed="'+(types.indexOf(s)>-1)+'">'+esc(s)+'</button>'}).join('')+'</div>'}
+  else{h+='<p class="sub">Añade tus tipos de deporte en Ajustes.</p>'}
+  h+='</section>';
+  // sueño
+  var sl=day.sleep||0;
+  h+='<section class="card c-sleep"><div class="ch"><span class="ib">'+icon('moon')+'</span><div class="t"><h2>Sueño</h2><p class="sub">Meta: '+nf(g.sleep)+' h</p></div><span class="tog'+(f.sleep>=1?' on':'')+'" id="sleep-tog">'+icon('check')+'</span></div>'
+   +'<div class="stepper"><button class="round" data-act="sleep-" aria-label="Media hora menos">'+icon('minus')+'</button><span class="val">'+nf(sl)+' h</span><button class="round" data-act="sleep+" aria-label="Media hora más">'+icon('plus')+'</button></div>'
+   +bar('sleep-bar',f.sleep)
+   +'<div class="chips" role="group" aria-label="Atajos de horas">'+[5,6,7,8,9].map(function(n){return '<button class="chip" data-act="sleepset" data-v="'+n+'" aria-pressed="'+(sl===n)+'">'+n+' h</button>'}).join('')+'</div></section>';
+  // pasos
+  h+='<section class="card c-steps"><div class="ch"><span class="ib">'+icon('steps')+'</span><div class="t"><h2>Pasos</h2><p class="sub">Meta: '+nf(g.steps)+'</p></div><span class="tog'+(f.steps>=1?' on':'')+'" id="steps-tog">'+icon('check')+'</span></div>'
+   +'<div class="big"><input id="steps-in" data-in="steps" type="text" inputmode="numeric" autocomplete="off" aria-label="Pasos de hoy" value="'+(day.steps?nf(day.steps):'')+'" placeholder="0"><span class="of">de '+nf(g.steps)+'</span></div>'
+   +bar('steps-bar',f.steps)+'</section>';
+  // fruta y verdura
+  var meals=[['b','Desayuno'],['l','Comida'],['d','Cena']];
+  h+='<section class="card c-fv"><div class="ch"><span class="ib">'+icon('apple')+'</span><div class="t"><h2>Fruta y verdura</h2><p class="sub">'+nfv+' de 3 comidas</p></div><span class="tog'+(nfv===3?' on':'')+'">'+icon('check')+'</span></div>'
+   +'<div class="chips" role="group" aria-label="Comidas con fruta o verdura">'+meals.map(function(m){return '<button class="chip" data-act="fv" data-v="'+m[0]+'" aria-pressed="'+!!fv[m[0]]+'">'+icon('apple','sm')+m[1]+'</button>'}).join('')+'</div></section>';
+  // proteína
+  h+='<section class="card c-protein"><div class="ch"><span class="ib">'+icon('egg')+'</span><div class="t"><h2>Proteína</h2><p class="sub">Meta: '+nf(g.protein)+' g</p></div><span class="tog'+(f.protein>=1?' on':'')+'" id="prot-tog">'+icon('check')+'</span></div>'
+   +'<div class="big"><input id="prot-in" data-in="protein" type="text" inputmode="numeric" autocomplete="off" aria-label="Gramos de proteína" value="'+(day.protein?nf(day.protein):'')+'" placeholder="0"><span class="of">g de '+nf(g.protein)+'</span></div>'
+   +bar('prot-bar',f.protein)+'</section>';
+  return h;
+}
+
+function stepBtn(part,p,on){
+  return '<button class="step" data-act="skin" data-v="'+part+':'+p.id+'" aria-pressed="'+on+'"><span class="ib">'+icon(p.icon)+'</span><span class="nm">'+esc(p.name)+'</span><span class="chk">'+icon('check','sm')+'</span></button>';
+}
+function renderSkin(){
+  var k=S.date,sp=skinPlan(k),sk=getDay(k).skin||{am:{},pm:{}},pr=skinProg(k);
+  var acts=sp.pm.filter(function(p){return p.active});
+  var h='<section class="card c-skin"><div class="ch"><span class="ib">'+icon('sun')+'</span><div class="t"><h2>Mañana</h2><p class="sub">'+sp.am.filter(function(p){return sk.am&&sk.am[p.id]}).length+' de '+sp.am.length+' pasos</p></div></div><div class="steps">'
+   +(sp.am.length?sp.am.map(function(p){return stepBtn('am',p,!!(sk.am&&sk.am[p.id]))}).join(''):'<p class="sub">No hay pasos de mañana este día. Puedes añadirlos en Ajustes.</p>')+'</div></section>';
+  h+='<section class="card c-protein" style="--a:var(--lilac);--ad:var(--lilac-d)"><div class="ch"><span class="ib">'+icon('moon')+'</span><div class="t"><h2>Noche</h2><p class="sub">'+sp.pm.filter(function(p){return sk.pm&&sk.pm[p.id]}).length+' de '+sp.pm.length+' pasos</p></div></div>'
+   +(acts.length?'<div><span class="tag">'+icon('sparkle','sm')+'Esta noche toca: '+acts.map(function(a){return esc(a.name)}).join(' + ')+'</span></div>':'')
+   +'<div class="steps">'+(sp.pm.length?sp.pm.map(function(p){return stepBtn('pm',p,!!(sk.pm&&sk.pm[p.id]))}).join(''):'<p class="sub">No hay pasos de noche este día.</p>')+'</div></section>';
+  // plan semanal
+  var cur=dowOf(k),pl='';
+  for(var i=0;i<7;i++){
+    var s=(S.cfg.plan[String(i)]||{pm:[]}).pm.map(prod).filter(Boolean),a=s.filter(function(p){return p.active})[0];
+    pl+='<div class="pd'+(i===cur?' now':'')+(a?' act':'')+'">'+LET[i]+icon(a?a.icon:'drop')+'</div>';
+  }
+  h+='<section class="card c-skin"><div class="ch"><span class="ib">'+icon('sparkle')+'</span><div class="t"><h2>Plan de la semana</h2><p class="sub">El activo de cada noche</p></div></div><div class="plan">'+pl+'</div></section>';
+  return h;
+}
+
+function renderSemana(){
+  var k=S.date,start=addDays(parse(k),-dowOf(k)),keys=[];
+  for(var i=0;i<7;i++)keys.push(keyOf(addDays(start,i)));
+  var rows=[['sport','Deporte','dumbbell','c-sport'],['sleep','Sueño','moon','c-sleep'],['steps','Pasos','steps','c-steps'],['fv','Fruta y verdura','apple','c-fv'],['protein','Proteína','egg','c-protein'],['skin','Skincare','drop','c-skin']];
+  var h='';
+  // medias
+  var past=keys.filter(function(x){return x<=todayK()});
+  var sl=past.map(function(x){return getDay(x).sleep}).filter(function(v){return v>0});
+  var st=past.map(function(x){return getDay(x).steps}).filter(function(v){return v>0});
+  var avg=function(a){return a.length?a.reduce(function(x,y){return x+y},0)/a.length:0};
+  var pDays=past.filter(function(x){return habitFrac(x,'protein')>=1}).length;
+  h+='<section class="card c-fv"><div class="tiles">'
+    +'<div class="tile" style="--a:var(--lilac)"><b>'+(sl.length?nf(Math.round(avg(sl)*10)/10)+' h':'sin datos')+'</b><span>Sueño medio</span></div>'
+    +'<div class="tile" style="--a:var(--mint)"><b>'+(st.length?nf(Math.round(avg(st))):'sin datos')+'</b><span>Pasos medios</span></div>'
+    +'<div class="tile" style="--a:var(--butter)"><b>'+pDays+' de '+past.length+'</b><span>Días de proteína</span></div></div></section>';
+  rows.forEach(function(r){
+    var cells=keys.map(function(x,i){
+      var fr=habitFrac(x,r[0]),fut=x>todayK();
+      return '<div class="dot'+(fut?' fut':fr>=1?' full':fr>0?' part':'')+'"><i>'+(fr>=1?icon('check','sm'):'')+'</i>'+LET[i]+'</div>';
+    }).join('');
+    var done=keys.filter(function(x){return x<=todayK()&&habitFrac(x,r[0])>=1}).length;
+    h+='<section class="card '+r[3]+'"><div class="ch"><span class="ib">'+icon(r[2])+'</span><div class="t"><h2>'+r[1]+'</h2><p class="sub">'+done+' de '+past.length+' días completos</p></div></div><div class="dots">'+cells+'</div></section>';
+  });
+  h+='<section class="card c-skin" style="--a:var(--pink);--ad:var(--pink-d)"><div class="ch"><span class="ib">'+icon('heart')+'</span><div class="t"><h2>Rachas</h2><p class="sub">Días seguidos completando cada hábito</p></div></div>'
+   +rows.map(function(r){var n=streak(r[0]);return '<div class="streak '+r[3]+'"><span class="ib">'+icon(r[2],'sm')+'</span><span>'+r[1]+'</span><span class="n">'+n+(n===1?' día':' días')+'</span></div>'}).join('')+'</section>';
+  return h;
+}
+
+function renderAjustes(){
+  var g=S.cfg.goals,h='';
+  h+='<section class="card c-sleep"><div class="ch"><span class="ib">'+icon('sliders')+'</span><div class="t"><h2>Tus metas</h2><p class="sub">Con ellas se calculan los anillos</p></div></div>'
+   +'<label class="field">Horas de sueño<input type="text" inputmode="decimal" data-goal="sleep" value="'+g.sleep+'"></label>'
+   +'<label class="field">Pasos al día<input type="text" inputmode="numeric" data-goal="steps" value="'+g.steps+'"></label>'
+   +'<label class="field">Proteína (g)<input type="text" inputmode="numeric" data-goal="protein" value="'+g.protein+'"></label></section>';
+  h+='<section class="card c-sport"><div class="ch"><span class="ib">'+icon('dumbbell')+'</span><div class="t"><h2>Tus deportes</h2><p class="sub">Los tipos que podrás elegir cada día</p></div></div>'
+   +S.cfg.sports.map(function(n){return '<div class="row"><span class="nm">'+esc(n)+'</span><button class="mini'+(S.confirmSport===n?' warn':'')+'" data-act="delsport" data-v="'+esc(n)+'">'+(S.confirmSport===n?'¿Seguro?':'Quitar')+'</button></div>'}).join('')
+   +'<div class="addp"><input type="text" id="ns-name" maxlength="24" placeholder="Nuevo deporte, por ejemplo Yoga" aria-label="Nuevo deporte" value="'+esc(S.newSport)+'"><button class="btn" data-act="addsport">Añadir deporte</button></div></section>';
+  var i=S.editDay,pl=S.cfg.plan[String(i)]||{am:[],pm:[]};
+  var chips=function(part){return S.cfg.products.map(function(p){return '<button class="chip" data-act="plantog" data-v="'+part+':'+p.id+'" aria-pressed="'+((pl[part]||[]).indexOf(p.id)>-1)+'">'+icon(p.icon,'sm')+esc(p.name)+'</button>'}).join('')};
+  h+='<section class="card c-skin"><div class="ch"><span class="ib">'+icon('drop')+'</span><div class="t"><h2>Rutina de skincare</h2><p class="sub">Elige qué te pones cada día</p></div></div>'
+   +'<div class="chips" role="group" aria-label="Día de la semana">'+DAYN.map(function(n,j){return '<button class="chip" data-act="editday" data-v="'+j+'" aria-pressed="'+(j===i)+'">'+n.slice(0,3)+'</button>'}).join('')+'</div>'
+   +'<p class="lbl">'+DAYN[i]+' por la mañana</p><div class="chips">'+chips('am')+'</div>'
+   +'<p class="lbl">'+DAYN[i]+' por la noche</p><div class="chips">'+chips('pm')+'</div></section>';
+  h+='<section class="card c-protein"><div class="ch"><span class="ib">'+icon('flask')+'</span><div class="t"><h2>Tus productos</h2><p class="sub">Añade o quita lo que uses</p></div></div>'
+   +S.cfg.products.map(function(p){return '<div class="row"><span class="ib" style="width:36px;height:36px;border-radius:12px">'+icon(p.icon,'sm')+'</span><span class="nm">'+esc(p.name)+(p.active?' · activo':'')+'</span><button class="mini'+(S.confirmDel===p.id?' warn':'')+'" data-act="delprod" data-v="'+p.id+'">'+(S.confirmDel===p.id?'¿Seguro?':'Quitar')+'</button></div>'}).join('')
+   +'<div class="addp"><p class="lbl">Nuevo producto</p><input type="text" id="np-name" maxlength="30" placeholder="Nombre del producto" aria-label="Nombre del producto" value="'+esc(S.newName)+'">'
+   +'<div class="chips" role="group" aria-label="Icono">'+ICONS.map(function(n){return '<button class="chip" data-act="newicon" data-v="'+n+'" aria-pressed="'+(S.newIcon===n)+'" aria-label="Icono '+n+'">'+icon(n,'sm')+'</button>'}).join('')+'<button class="chip" data-act="newactive" aria-pressed="'+S.newActive+'">Es un activo</button></div>'
+   +'<button class="btn" data-act="addprod">Añadir producto</button></div></section>';
+  h+='<section class="card c-steps"><div class="ch"><span class="ib">'+icon('check')+'</span><div class="t"><h2>Tus datos</h2><p class="sub">'+(S.mode==='cloud'?'Se guardan en tu cuenta y los ves desde cualquier dispositivo.':S.mode==='local'?'Se guardan solo en este dispositivo.':'Comprobando dónde se guardan…')+'</p></div></div></section>';
+  return h;
+}
+
+function renderNav(){
+  var items=[['hoy','Hoy','heart'],['skin','Skincare','drop'],['semana','Semana','chart'],['ajustes','Ajustes','sliders']];
+  $('#nav').innerHTML=items.map(function(i){return '<button data-act="tab" data-v="'+i[0]+'"'+(S.tab===i[0]?' aria-current="page"':'')+'>'+icon(i[2])+i[1]+'</button>'}).join('');
+}
+function render(){
+  renderTop();
+  var m={hoy:renderHoy,skin:renderSkin,semana:renderSemana,ajustes:renderAjustes}[S.tab];
+  $('#main').innerHTML=m();
+  renderNav();
+}
+
+/* ---------- actualización en vivo mientras se escribe ---------- */
+function live(){
+  var k=S.date,day=getDay(k),f=frac(day),p=pct(day);
+  var set=function(id,v){var e=$('#'+id);if(e)e.style.setProperty('--w',Math.round(v*100))};
+  set('steps-bar',f.steps);set('prot-bar',f.protein);
+  var t=function(id,on){var e=$('#'+id);if(e)e.classList.toggle('on',on)};
+  t('steps-tog',f.steps>=1);t('prot-tog',f.protein>=1);
+  var top=$('#top');var scroll=window.scrollY;
+  var active=document.activeElement;
+  renderTop();
+  window.scrollTo(0,scroll);
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act'),v=b.getAttribute('data-v'),k=S.date;
+  var num=function(x){return parseFloat(String(x).replace(',','.'))};
+  switch(a){
+    case 'tab':S.tab=v;S.confirmDel=null;S.confirmSport=null;window.scrollTo(0,0);break;
+    case 'day':S.date=v;break;
+    case 'prevw':S.date=keyOf(addDays(parse(k),-7));break;
+    case 'nextw':var n=keyOf(addDays(parse(k),7));S.date=n>todayK()?todayK():n;break;
+    case 'sport':upd(k,function(d){d.sport=!d.sport;if(!d.sport){d.sportTypes=[];d.sportType=null}});break;
+    case 'sporttype':upd(k,function(d){var t=dayTypes(d).slice(),i=t.indexOf(v);if(i>-1)t.splice(i,1);else t.push(v);d.sportTypes=t;d.sportType=null;d.sport=t.length>0?true:d.sport});break;
+    case 'delsport':
+      if(S.confirmSport!==v){S.confirmSport=v;break}
+      S.cfg.sports=S.cfg.sports.filter(function(x){return x!==v});S.confirmSport=null;saveCfg();break;
+    case 'addsport':
+      var sn=$('#ns-name').value.trim();if(!sn){$('#ns-name').focus();return}
+      if(S.cfg.sports.indexOf(sn)<0)S.cfg.sports=S.cfg.sports.concat([sn]);
+      S.newSport='';saveCfg();break;
+    case 'sleep+':upd(k,function(d){d.sleep=Math.min(14,(d.sleep||0)+.5)});break;
+    case 'sleep-':upd(k,function(d){d.sleep=Math.max(0,(d.sleep||0)-.5)});break;
+    case 'sleepset':upd(k,function(d){d.sleep=d.sleep===Number(v)?null:Number(v)});break;
+        case 'fv':upd(k,function(d){d.fv[v]=!d.fv[v]});break;
+    case 'skin':var pp=v.split(':');upd(k,function(d){if(!d.skin[pp[0]])d.skin[pp[0]]={};d.skin[pp[0]][pp[1]]=!d.skin[pp[0]][pp[1]]});break;
+    case 'editday':S.editDay=Number(v);break;
+    case 'plantog':
+      var q=v.split(':'),pl=S.cfg.plan[String(S.editDay)]||{am:[],pm:[]};
+      pl=clone(pl);var ix=pl[q[0]].indexOf(q[1]);if(ix>-1)pl[q[0]].splice(ix,1);else pl[q[0]].push(q[1]);
+      S.cfg.plan[String(S.editDay)]=pl;saveCfg();break;
+    case 'delprod':
+      if(S.confirmDel!==v){S.confirmDel=v;break}
+      S.cfg.products=S.cfg.products.filter(function(p){return p.id!==v});
+      Object.keys(S.cfg.plan).forEach(function(d){['am','pm'].forEach(function(pt){S.cfg.plan[d][pt]=(S.cfg.plan[d][pt]||[]).filter(function(id){return id!==v})})});
+      S.confirmDel=null;saveCfg();break;
+    case 'newicon':S.newName=$('#np-name').value;S.newIcon=v;break;
+    case 'newactive':S.newName=$('#np-name').value;S.newActive=!S.newActive;break;
+    case 'addprod':
+      var name=$('#np-name').value.trim();if(!name){$('#np-name').focus();return}
+      S.cfg.products=S.cfg.products.concat([{id:'p'+Date.now().toString(36),name:name,icon:S.newIcon,active:S.newActive}]);
+      S.newName='';S.newActive=false;saveCfg();break;
+  }
+  render();
+});
+document.addEventListener('input',function(e){
+  var t=e.target,k=S.date;
+  if(t.matches('[data-in]')){
+    var n=parseInt(String(t.value).replace(/\D/g,''),10);
+    var field=t.getAttribute('data-in');
+    upd(k,function(d){d[field]=isNaN(n)?null:n});
+    live();
+  }
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.matches('[data-in]')){var d=getDay(S.date),f=t.getAttribute('data-in');t.value=d[f]?nf(d[f]):'';return}
+  if(t.matches('[data-goal]')){
+    var g=t.getAttribute('data-goal'),n=parseFloat(String(t.value).replace(',','.'));
+    if(!(n>0)){t.value=S.cfg.goals[g];return}
+    if(g==='sleep')n=Math.min(14,Math.round(n*2)/2);else n=Math.round(n);
+    S.cfg.goals[g]=n;saveCfg();render();
+  }
+});
+document.addEventListener('focusin',function(e){if(e.target.matches('[data-in]')){var v=e.target.value.replace(/\D/g,'');e.target.value=v}});
+
+/* ---------- arranque ---------- */
+loadLocal();
+render();
+
+function initCloud(){
+  if(!window.claude||!window.claude.use){S.mode='local';render();return}
+  Promise.all([window.claude.use('db'),window.claude.use('user')]).then(function(r){
+    var db=r[0],user=r[1];
+    return (user&&user.id?user.id():Promise.resolve(null)).then(function(uid){
+      if(!db||!uid){S.mode='local';render();return}
+      S.col=db.collection('data/users/'+uid);
+      S.mode='cloud';S.stale=false;
+      var first=true,t=setTimeout(function(){S.stale=true;renderStatus()},10000);
+      S.col.onSnapshot(function(snap){
+        if(!snap.metadata.fromCache){clearTimeout(t);S.stale=false}
+        snap.docs.forEach(function(doc){
+          if(pending(doc.id))return;
+          var data=doc.data();if(!data)return;
+          if(doc.id==='config')S.cfg=mergeCfg(data);
+          else if(doc.id.indexOf('d-')===0)S.days[doc.id.slice(2)]=clone(data);
+        });
+        if(first&&!snap.metadata.fromCache){
+          first=false;
+          if(snap.empty&&S.localHad){pushCloud('config',S.cfg);Object.keys(S.days).forEach(function(k){pushCloud('d-'+k,S.days[k])})}
+        }
+        persistLocal();
+        var ae=document.activeElement;
+        if(!(ae&&ae.tagName==='INPUT'))render();
+      },function(){S.err=true;S.stale=true;renderStatus()});
+      render();
+    });
+  }).catch(function(){S.mode='local';render()});
+}
+initCloud();
+})();
+</script>
+</body>
+</html>
